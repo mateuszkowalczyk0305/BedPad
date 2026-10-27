@@ -44,6 +44,40 @@ The exact GPIO assignments will be added once the hardware layout is finalized.
 
 ## Software
 
+### ESP-IDF hello world (ESP32-WROOM-32)
+
+The project currently runs a GPIO interrupt button test on the `esp32`
+target. Connect each button between its GPIO and GND; internal pull-ups are
+enabled. GPIO27 is MIDDLE, GPIO26 is RIGHT, and GPIO25 is LEFT.
+Both edges trigger an ISR that wakes a task. The task debounces each button
+for 30 ms and logs PRESSED / RELEASED at 115200 baud. No logging runs in the
+ISR. Pulses shorter than the debounce interval may be ignored. The test runs
+continuously without restarting. The controller features below are planned.
+
+Joystick: VCC to 3.3 V, GND to GND, VRx to GPIO34 (ADC1 channel 6),
+VRy to GPIO35 (ADC1 channel 7), SW to GPIO32. Do not power the joystick from
+5 V with analog outputs directly connected to the ESP32.
+The monitor prints raw 12-bit X/Y readings (0..4095), averaged over 16 samples,
+every 200 ms. Center need not be exactly 2048; ADC nonlinearity and high-end
+saturation mean these readings test movement rather than measure voltage.
+The switch uses the same IRQ debounce as the buttons, logged as JOYSTICK_SW.
+
+In VS Code, select the installed ESP-IDF setup using
+`ESP-IDF: Select Current ESP-IDF Version`, then run `ESP-IDF: Build Your Project`.
+Use `ESP-IDF: Select Port to Use` to select the board's COM port, then
+`ESP-IDF: Flash Your Project` and `ESP-IDF: Monitor Your Device`.
+
+Alternatively, open the installed ESP-IDF PowerShell terminal in this folder:
+
+```powershell
+idf.py build
+idf.py -p COM5 flash monitor
+```
+
+Replace `COM5` with the actual port. Exit the monitor with `Ctrl+]`.
+The serial monitor uses 115200 baud. If connection stalls, hold BOOT while
+connecting and release it once writing starts.
+
 The firmware is intended to handle:
 
 - BLE HID mouse and keyboard reports
